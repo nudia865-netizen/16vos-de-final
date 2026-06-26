@@ -185,6 +185,25 @@
   }
   #toast.show { transform: translateX(-50%) translateY(0); }
 
+  /* ── Advance pick ── */
+  .advance-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 3px 0 6px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+  .advance-label { font-size: 10px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+  .adv-btn {
+    flex: 1; min-width: 0; max-width: 140px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px; background: var(--card2);
+    color: var(--muted); font-size: 11px; font-weight: 700;
+    padding: 4px 8px; cursor: pointer; transition: all .15s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center;
+  }
+  .adv-btn:hover { border-color: var(--green); color: var(--green); }
+  .adv-btn.selected { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
   @media (max-width: 440px) {
     .match { grid-template-columns: 40px 1fr 82px 1fr; gap: 4px; }
     .team-name { font-size: 12px; }
@@ -192,6 +211,7 @@
     .score-inputs input { width: 30px; height: 30px; font-size: 14px; }
     #prodeCard { padding: 12px; }
     .actions { flex-direction: column; }
+    .adv-btn { font-size: 10px; padding: 3px 6px; max-width: 110px; }
   }
 </style>
 </head>
@@ -210,6 +230,11 @@
 
   <div class="edit-banner">
     ✏️ <span>Los equipos en <strong>naranja</strong> están pendientes de confirmación. Hacé clic para editarlos.</span>
+  </div>
+
+  <div style="background:rgba(26,155,232,.08);border:1px solid rgba(26,155,232,.3);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#7ab8e8;line-height:1.6;">
+    📋 <strong style="color:#a8cce8;">Reglas:</strong>
+    El resultado es a <strong style="color:#a8cce8;">90 minutos</strong> (no se cuentan alargue ni penales). +1 punto extra por acertar qué equipo avanza, independientemente del marcador.
   </div>
 
   <div id="prodeCard">
@@ -320,6 +345,28 @@ PARTIDOS.forEach((p, i) => {
       <div class="team-name">${visitHTML}</div>
     </div>`;
   container.appendChild(row);
+
+  // Advance pick row (spans full width via wrapper trick)
+  const advRow = document.createElement('div');
+  advRow.className = 'advance-row';
+  advRow.dataset.idx = i;
+  advRow.innerHTML = `
+    <span class="advance-label">Avanza →</span>
+    <button class="adv-btn" data-idx="${i}" data-side="local">
+      ${(p.localEdit ? p.local : (localFlag + ' ' + p.local)).trim()}
+    </button>
+    <button class="adv-btn" data-idx="${i}" data-side="visitante">
+      ${(p.visitanteEdit ? p.visitante : (p.visitante + ' ' + visitFlag)).trim()}
+    </button>`;
+  container.appendChild(advRow);
+
+  advRow.querySelectorAll('.adv-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // deselect sibling
+      advRow.querySelectorAll('.adv-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
 });
 
 /* ── Nombre ── */
@@ -332,6 +379,7 @@ document.getElementById('nombre').addEventListener('input', function () {
 document.getElementById('limpiar').onclick = () => {
   if (!confirm('¿Limpiar todos los resultados?')) return;
   container.querySelectorAll('input[type=number]').forEach(i => i.value = '');
+  container.querySelectorAll('.adv-btn').forEach(b => b.classList.remove('selected'));
   showToast('✓ Limpiado');
 };
 
@@ -350,6 +398,15 @@ function getTeamName(idx, side) {
   const el = container.querySelector(`.editable-name[data-idx="${idx}"][data-side="${side}"]`);
   if (el) return el.value.trim() || el.placeholder;
   return side === 'local' ? PARTIDOS[idx].local : PARTIDOS[idx].visitante;
+}
+
+function getAdvance(idx) {
+  const advRow = container.querySelector(`.advance-row[data-idx="${idx}"]`);
+  if (!advRow) return null;
+  const sel = advRow.querySelector('.adv-btn.selected');
+  if (!sel) return null;
+  const side = sel.dataset.side;
+  return getTeamName(idx, side);
 }
 
 /* ── WhatsApp ── */
@@ -372,7 +429,9 @@ document.getElementById('enviarWA').onclick = () => {
     const visitName = getTeamName(i, 'visitante');
     const flagL = FLAGS[localName] || '🏳';
     const flagV = FLAGS[visitName] || '🏳';
-    texto += `${flagL} ${localName} ${gls} – ${gvs} ${visitName} ${flagV} (${p.hora})\n`;
+    const adv = getAdvance(i);
+    const advTxt = adv ? ` → avanza: *${adv}*` : '';
+    texto += `${flagL} ${localName} ${gls} – ${gvs} ${visitName} ${flagV}${advTxt} (${p.hora})\n`;
   });
 
   const url = 'https://wa.me/?text=' + encodeURIComponent(texto);
@@ -390,6 +449,7 @@ function generarImagen() {
   try {
     const scores = [];
     const teamNames = [];
+    const advances = [];
     container.querySelectorAll('.match').forEach((row, i) => {
       const gl = row.querySelector('.gl').value;
       const gv = row.querySelector('.gv').value;
@@ -398,6 +458,7 @@ function generarImagen() {
         local: getTeamName(i, 'local'),
         visitante: getTeamName(i, 'visitante'),
       });
+      advances.push(getAdvance(i));
     });
 
     const nombre = document.getElementById('nombre').value.trim();
