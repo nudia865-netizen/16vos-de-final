@@ -316,15 +316,16 @@ PARTIDOS.forEach((p, i) => {
   row.className = 'match';
   row.dataset.idx = i;
 
-  const localFlag  = FLAGS[p.local]  || '';
+  const localFlag  = FLAGS[p.local]     || '';
   const visitFlag  = FLAGS[p.visitante] || '';
 
+  // En la fila del partido: bandera siempre visible, nombre editable si corresponde
   const localHTML = p.localEdit
-    ? `<input class="editable-name local-name" type="text" value="${p.local}" placeholder="${p.local}" data-idx="${i}" data-side="local"/>`
+    ? `<span class="flag">${localFlag}</span><input class="editable-name local-name" type="text" value="${p.local}" placeholder="${p.local}" data-idx="${i}" data-side="local"/>`
     : `<span class="flag">${localFlag}</span> <span>${p.local}</span>`;
 
   const visitHTML = p.visitanteEdit
-    ? `<input class="editable-name visit-name" type="text" value="${p.visitante}" placeholder="${p.visitante}" data-idx="${i}" data-side="visitante"/>`
+    ? `<input class="editable-name visit-name" type="text" value="${p.visitante}" placeholder="${p.visitante}" data-idx="${i}" data-side="visitante"/><span class="flag" data-flag-idx="${i}" data-flag-side="visitante">${visitFlag}</span>`
     : `<span>${p.visitante}</span> <span class="flag">${visitFlag}</span>`;
 
   row.innerHTML = `
@@ -346,62 +347,57 @@ PARTIDOS.forEach((p, i) => {
     </div>`;
   container.appendChild(row);
 
-  // Advance pick row (spans full width via wrapper trick)
+  // Advance pick row
   const advRow = document.createElement('div');
   advRow.className = 'advance-row';
   advRow.dataset.idx = i;
 
-  // Helper to get flag for a team (may be editable)
-  const localFlagAdv  = FLAGS[p.local]      || '';
-  const visitFlagAdv  = FLAGS[p.visitante]  || '';
+  const localFlagAdv  = FLAGS[p.local]     || '';
+  const visitFlagAdv  = FLAGS[p.visitante] || '';
 
-  const localBtnContent  = p.localEdit
-    ? `✏ ${p.local}`
-    : `${localFlagAdv} ${p.local}`;
-  const visitBtnContent  = p.visitanteEdit
-    ? `✏ ${p.visitante}`
-    : `${p.visitante} ${visitFlagAdv}`;
+  // Siempre mostrar bandera + nombre en botón Avanza
+  const localBtnContent = `${localFlagAdv} ${p.local}`.trim();
+  const visitBtnContent = `${p.visitante} ${visitFlagAdv}`.trim();
 
   advRow.innerHTML = `
     <span class="advance-label">Avanza</span>
     <button class="adv-btn" data-idx="${i}" data-side="local" title="${p.local}">
-      ${localBtnContent.trim()}
+      ${localBtnContent}
     </button>
     <span style="color:var(--muted);font-size:9px;">o</span>
     <button class="adv-btn" data-idx="${i}" data-side="visitante" title="${p.visitante}">
-      ${visitBtnContent.trim()}
+      ${visitBtnContent}
     </button>`;
   container.appendChild(advRow);
 
   advRow.querySelectorAll('.adv-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      // deselect sibling
       advRow.querySelectorAll('.adv-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      // Update button text to reflect current editable name
-      const side = btn.dataset.side;
-      const editEl = container.querySelector(`.editable-name[data-idx="${i}"][data-side="${side === 'local' ? 'local' : 'visitante'}"]`);
-      if (editEl) {
-        const name = editEl.value.trim() || editEl.placeholder;
-        const flag = FLAGS[name] || '';
-        btn.textContent = side === 'local' ? `${flag} ${name}`.trim() : `${name} ${flag}`.trim();
-      }
     });
   });
 
-  // When editable name changes, update the corresponding adv-btn text
+  // Cuando el nombre editable cambia, actualizar el botón Avanza con bandera si la hay
   if (p.localEdit) {
     const inp = row.querySelector(`.editable-name[data-side="local"]`);
     if (inp) inp.addEventListener('input', () => {
       const btn = advRow.querySelector('.adv-btn[data-side="local"]');
-      if (btn) { const name = inp.value.trim() || inp.placeholder; btn.textContent = `✏ ${name}`; }
+      if (btn) {
+        const name = inp.value.trim() || inp.placeholder;
+        const flag = FLAGS[name] || '';
+        btn.textContent = `${flag} ${name}`.trim();
+      }
     });
   }
   if (p.visitanteEdit) {
     const inp = row.querySelector(`.editable-name[data-side="visitante"]`);
     if (inp) inp.addEventListener('input', () => {
       const btn = advRow.querySelector('.adv-btn[data-side="visitante"]');
-      if (btn) { const name = inp.value.trim() || inp.placeholder; btn.textContent = `✏ ${name}`; }
+      if (btn) {
+        const name = inp.value.trim() || inp.placeholder;
+        const flag = FLAGS[name] || '';
+        btn.textContent = `${name} ${flag}`.trim();
+      }
     });
   }
 });
@@ -506,11 +502,11 @@ function generarImagen() {
     const INNER = W - PAD * 2;
 
     const C = {
-      bg:     '#161b25',
-      card2:  '#1c2333',
-      border: '#252e42',
-      text:   '#e8ecf2',
-      muted:  '#7a8aaa',
+      bg:     '#0f1a12',
+      card2:  '#142018',
+      border: '#1e3324',
+      text:   '#e2ece5',
+      muted:  '#6a8c74',
       green:  '#115e2a',
       greenD: 'rgba(17,94,42,0.18)',
       orange: '#f5a623',
