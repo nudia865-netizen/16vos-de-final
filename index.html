@@ -7,15 +7,15 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --green:      #1a9be8;
-    --green-dim:  rgba(26,155,232,.13);
-    --green-hover:#1480c5;
-    --dark:       #0e1117;
-    --card:       #161b25;
-    --card2:      #1c2333;
-    --border:     #252e42;
-    --text:       #e8ecf2;
-    --muted:      #7a8aaa;
+    --green:      #115e2a;
+    --green-dim:  rgba(17,94,42,.22);
+    --green-hover:#0d4a21;
+    --dark:       #0a120d;
+    --card:       #0f1a12;
+    --card2:      #142018;
+    --border:     #1e3324;
+    --text:       #e2ece5;
+    --muted:      #6a8c74;
     --orange:     #f5a623;
     --orange-dim: rgba(245,166,35,.13);
   }
@@ -188,21 +188,21 @@
   /* ── Advance pick ── */
   .advance-row {
     display: flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 3px 0 6px;
+    gap: 5px; padding: 2px 0 4px;
     border-bottom: 1px solid rgba(255,255,255,.04);
   }
-  .advance-label { font-size: 10px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+  .advance-label { font-size: 9px; color: var(--muted); white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .05em; }
   .adv-btn {
-    flex: 1; min-width: 0; max-width: 140px;
+    flex: 1; min-width: 0; max-width: 130px;
     border: 1.5px solid var(--border);
-    border-radius: 6px; background: var(--card2);
-    color: var(--muted); font-size: 11px; font-weight: 700;
-    padding: 4px 8px; cursor: pointer; transition: all .15s;
+    border-radius: 5px; background: var(--card2);
+    color: var(--muted); font-size: 10px; font-weight: 700;
+    padding: 3px 6px; cursor: pointer; transition: all .15s;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    text-align: center;
+    text-align: center; line-height: 1.3;
   }
   .adv-btn:hover { border-color: var(--green); color: var(--green); }
-  .adv-btn.selected { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .adv-btn.selected { background: var(--green-dim); border-color: var(--green); color: #2ecc71; font-weight: 800; }
 
   @media (max-width: 440px) {
     .match { grid-template-columns: 40px 1fr 82px 1fr; gap: 4px; }
@@ -211,7 +211,7 @@
     .score-inputs input { width: 30px; height: 30px; font-size: 14px; }
     #prodeCard { padding: 12px; }
     .actions { flex-direction: column; }
-    .adv-btn { font-size: 10px; padding: 3px 6px; max-width: 110px; }
+    .adv-btn { font-size: 9px; padding: 2px 5px; max-width: 105px; }
   }
 </style>
 </head>
@@ -261,7 +261,7 @@ const FLAGS = {
   'Costa de Marfil': '🇨🇮', 'México': '🇲🇽', 'Suiza': '🇨🇭',
   'Estados Unidos': '🇺🇸', 'Bosnia y Herzegovina': '🇧🇦', 'Australia': '🇦🇺',
   'Argentina': '🇦🇷', 'Suecia': '🇸🇪', 'Francia': '🇫🇷', 'España': '🇪🇸',
-  'Portugal': '🇵🇹', 'Inglaterra': 'gb-eng', 'Colombia': '🇨🇴',
+  'Portugal': '🇵🇹', 'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Colombia': '🇨🇴',
 };
 
 // editable: true = nombre editable (pendiente de confirmación)
@@ -350,13 +350,26 @@ PARTIDOS.forEach((p, i) => {
   const advRow = document.createElement('div');
   advRow.className = 'advance-row';
   advRow.dataset.idx = i;
+
+  // Helper to get flag for a team (may be editable)
+  const localFlagAdv  = FLAGS[p.local]      || '';
+  const visitFlagAdv  = FLAGS[p.visitante]  || '';
+
+  const localBtnContent  = p.localEdit
+    ? `✏ ${p.local}`
+    : `${localFlagAdv} ${p.local}`;
+  const visitBtnContent  = p.visitanteEdit
+    ? `✏ ${p.visitante}`
+    : `${p.visitante} ${visitFlagAdv}`;
+
   advRow.innerHTML = `
-    <span class="advance-label">Avanza →</span>
-    <button class="adv-btn" data-idx="${i}" data-side="local">
-      ${(p.localEdit ? p.local : (localFlag + ' ' + p.local)).trim()}
+    <span class="advance-label">Avanza</span>
+    <button class="adv-btn" data-idx="${i}" data-side="local" title="${p.local}">
+      ${localBtnContent.trim()}
     </button>
-    <button class="adv-btn" data-idx="${i}" data-side="visitante">
-      ${(p.visitanteEdit ? p.visitante : (p.visitante + ' ' + visitFlag)).trim()}
+    <span style="color:var(--muted);font-size:9px;">o</span>
+    <button class="adv-btn" data-idx="${i}" data-side="visitante" title="${p.visitante}">
+      ${visitBtnContent.trim()}
     </button>`;
   container.appendChild(advRow);
 
@@ -365,8 +378,32 @@ PARTIDOS.forEach((p, i) => {
       // deselect sibling
       advRow.querySelectorAll('.adv-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
+      // Update button text to reflect current editable name
+      const side = btn.dataset.side;
+      const editEl = container.querySelector(`.editable-name[data-idx="${i}"][data-side="${side === 'local' ? 'local' : 'visitante'}"]`);
+      if (editEl) {
+        const name = editEl.value.trim() || editEl.placeholder;
+        const flag = FLAGS[name] || '';
+        btn.textContent = side === 'local' ? `${flag} ${name}`.trim() : `${name} ${flag}`.trim();
+      }
     });
   });
+
+  // When editable name changes, update the corresponding adv-btn text
+  if (p.localEdit) {
+    const inp = row.querySelector(`.editable-name[data-side="local"]`);
+    if (inp) inp.addEventListener('input', () => {
+      const btn = advRow.querySelector('.adv-btn[data-side="local"]');
+      if (btn) { const name = inp.value.trim() || inp.placeholder; btn.textContent = `✏ ${name}`; }
+    });
+  }
+  if (p.visitanteEdit) {
+    const inp = row.querySelector(`.editable-name[data-side="visitante"]`);
+    if (inp) inp.addEventListener('input', () => {
+      const btn = advRow.querySelector('.adv-btn[data-side="visitante"]');
+      if (btn) { const name = inp.value.trim() || inp.placeholder; btn.textContent = `✏ ${name}`; }
+    });
+  }
 });
 
 /* ── Nombre ── */
@@ -474,8 +511,8 @@ function generarImagen() {
       border: '#252e42',
       text:   '#e8ecf2',
       muted:  '#7a8aaa',
-      green:  '#1a9be8',
-      greenD: 'rgba(26,155,232,0.15)',
+      green:  '#115e2a',
+      greenD: 'rgba(17,94,42,0.18)',
       orange: '#f5a623',
       orangeD:'rgba(245,166,35,0.15)',
       sep:    'rgba(255,255,255,0.04)',
