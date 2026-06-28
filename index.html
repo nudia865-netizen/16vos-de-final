@@ -580,6 +580,7 @@ function generarImagen() {
     const FOOTER_H  = 36;
     const DAY_LBL_H = 26;
     const MATCH_H   = 48;
+    const ADV_H     = 20;   // altura de la fila "Avanza" por partido
     const SEC_GAP   = 14;
     const META_W    = 50;
 
@@ -590,11 +591,11 @@ function generarImagen() {
         cur = { fecha: p.fecha, label: DIAS[p.fecha] || p.fecha, items: [] };
         groups.push(cur);
       }
-      cur.items.push({ ...p, score: scores[i], localName: teamNames[i].local, visitanteName: teamNames[i].visitante });
+      cur.items.push({ ...p, idx: i, score: scores[i], localName: teamNames[i].local, visitanteName: teamNames[i].visitante });
     });
 
     let contentH = HEADER_H + 16;
-    groups.forEach(g => { contentH += DAY_LBL_H + g.items.length * MATCH_H + SEC_GAP; });
+    groups.forEach(g => { contentH += DAY_LBL_H + g.items.length * (MATCH_H + ADV_H) + SEC_GAP; });
     contentH += FOOTER_H + 16;
 
     const canvas = document.createElement('canvas');
@@ -683,6 +684,35 @@ function generarImagen() {
         txt(p.visitanteName + ' ' + (FLAGS[p.visitanteName]||''), rightStart+4, my, fb(12), C.text, 'left', COL_W-8);
 
         y += MATCH_H;
+
+        // ── Fila "Avanza" ──
+        const adv = advances[p.idx];
+        const advY = y + ADV_H/2;
+        // fondo sutil
+        ctx.fillStyle = 'rgba(17,94,42,0.08)';
+        ctx.fillRect(PAD*S, y*S, INNER*S, ADV_H*S);
+        // línea superior
+        ctx.fillStyle = C.border;
+        ctx.fillRect(PAD*S, y*S, INNER*S, 1*S);
+
+        if (adv) {
+          const advFlag = FLAGS[adv] || '';
+          txt('AVANZA →', PAD+4, advY, fn(8,700), C.muted, 'left');
+          // badge con nombre del equipo que avanza
+          ctx.font = fn(9,700);
+          const advStr = `${advFlag} ${adv}`.trim();
+          const tw = ctx.measureText(advStr).width/S;
+          const bw = tw + 14, bh = 14, bx = PAD + 55, by = advY - bh/2;
+          roundRect(bx, by, bw, bh, 3);
+          ctx.fillStyle = C.greenD; ctx.fill();
+          roundRect(bx, by, bw, bh, 3);
+          ctx.strokeStyle = C.green; ctx.lineWidth = 1*S; ctx.stroke();
+          txt(advStr, bx + bw/2, advY, fn(9,700), '#2ecc71', 'center');
+        } else {
+          txt('AVANZA → sin selección', PAD+4, advY, fn(8,400), C.muted, 'left');
+        }
+
+        y += ADV_H;
       });
       y += SEC_GAP;
     });
