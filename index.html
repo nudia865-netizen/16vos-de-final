@@ -228,10 +228,6 @@
     <input type="text" id="nombre" placeholder="¿Cómo te llamás?" autocomplete="off"/>
   </div>
 
-  <div class="edit-banner">
-    ✏️ <span>Los equipos en <strong>naranja</strong> están pendientes de confirmación. Hacé clic para editarlos.</span>
-  </div>
-
   <div style="background:rgba(26,155,232,.08);border:1px solid rgba(26,155,232,.3);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#7ab8e8;line-height:1.6;">
     📋 <strong style="color:#a8cce8;">Reglas:</strong>
     El resultado es a <strong style="color:#a8cce8;">90 minutos</strong> (no se cuentan alargue ni penales). +1 punto extra por acertar qué equipo avanza, independientemente del marcador.
@@ -321,32 +317,35 @@ const FLAGS = {
   'China':               flag('C','N'),
   'Indonesia':           flag('I','D'),
   'Nueva Zelanda':       flag('N','Z'),
+  'Noruega':             flag('N','O'),
+  'RD Congo':            flag('C','D'),
+  'Cabo Verde':          flag('C','V'),
 };
 
 // editable: true = nombre editable (pendiente de confirmación)
 const PARTIDOS = [
   // Domingo 28/06
-  { fecha: '2026-06-28', hora: '16:00', local: 'Sudáfrica',        localEdit: false, visitante: 'Canadá',                          visitanteEdit: false },
+  { fecha: '2026-06-28', hora: '16:00', local: 'Sudáfrica',        localEdit: false, visitante: 'Canadá',          visitanteEdit: false },
   // Lunes 29/06
-  { fecha: '2026-06-29', hora: '14:00', local: 'Brasil',            localEdit: false, visitante: 'Japón',                           visitanteEdit: false },
-  { fecha: '2026-06-29', hora: '17:30', local: 'Alemania',          localEdit: false, visitante: 'Tercero Grupo A/B/C/D/F',         visitanteEdit: true  },
-  { fecha: '2026-06-29', hora: '22:00', local: 'Países Bajos',      localEdit: false, visitante: 'Marruecos',                       visitanteEdit: false },
+  { fecha: '2026-06-29', hora: '14:00', local: 'Brasil',            localEdit: false, visitante: 'Japón',           visitanteEdit: false },
+  { fecha: '2026-06-29', hora: '17:30', local: 'Alemania',          localEdit: false, visitante: 'Paraguay',        visitanteEdit: false },
+  { fecha: '2026-06-29', hora: '22:00', local: 'Países Bajos',      localEdit: false, visitante: 'Marruecos',       visitanteEdit: false },
   // Martes 30/06
-  { fecha: '2026-06-30', hora: '14:00', local: 'Costa de Marfil',   localEdit: false, visitante: '2do Grupo I',                     visitanteEdit: true  },
-  { fecha: '2026-06-30', hora: '18:00', local: '1ro Grupo I',       localEdit: true,  visitante: 'Tercero Grupo C/D/F/G/H',         visitanteEdit: true  },
-  { fecha: '2026-06-30', hora: '22:00', local: 'México',            localEdit: false, visitante: 'Tercero Grupo C/E/F/H/I',         visitanteEdit: true  },
+  { fecha: '2026-06-30', hora: '14:00', local: 'Costa de Marfil',   localEdit: false, visitante: 'Noruega',         visitanteEdit: false },
+  { fecha: '2026-06-30', hora: '18:00', local: 'Francia',           localEdit: false, visitante: 'Suecia',          visitanteEdit: false },
+  { fecha: '2026-06-30', hora: '22:00', local: 'México',            localEdit: false, visitante: 'Ecuador',         visitanteEdit: false },
   // Miércoles 01/07
-  { fecha: '2026-07-01', hora: '13:00', local: '1ro Grupo L',       localEdit: true,  visitante: 'Tercero Grupo E/H/I/J/K',         visitanteEdit: true  },
-  { fecha: '2026-07-01', hora: '17:00', local: '1ro Grupo G',       localEdit: true,  visitante: 'Tercero Grupo A/E/H/I/J',         visitanteEdit: true  },
-  { fecha: '2026-07-01', hora: '21:00', local: 'Estados Unidos',    localEdit: false, visitante: 'Bosnia y Herzegovina',            visitanteEdit: false },
+  { fecha: '2026-07-01', hora: '13:00', local: 'Inglaterra',        localEdit: false, visitante: 'RD Congo',        visitanteEdit: false },
+  { fecha: '2026-07-01', hora: '17:00', local: 'Bélgica',           localEdit: false, visitante: 'Senegal',         visitanteEdit: false },
+  { fecha: '2026-07-01', hora: '21:00', local: 'Estados Unidos',    localEdit: false, visitante: 'Bosnia y Herzegovina', visitanteEdit: false },
   // Jueves 02/07
-  { fecha: '2026-07-02', hora: '16:00', local: '1ro Grupo H',       localEdit: true,  visitante: '2do Grupo J',                     visitanteEdit: true  },
-  { fecha: '2026-07-02', hora: '20:00', local: '2do Grupo K',       localEdit: true,  visitante: '2do Grupo L',                     visitanteEdit: true  },
-  { fecha: '2026-07-03', hora: '00:00', local: 'Suiza',             localEdit: false, visitante: 'Tercero Grupo E/F/G/I/J',         visitanteEdit: true  },
+  { fecha: '2026-07-02', hora: '16:00', local: 'España',            localEdit: false, visitante: 'Austria',         visitanteEdit: false },
+  { fecha: '2026-07-02', hora: '20:00', local: 'Portugal',          localEdit: false, visitante: 'Croacia',         visitanteEdit: false },
+  { fecha: '2026-07-03', hora: '00:00', local: 'Suiza',             localEdit: false, visitante: 'Argelia',         visitanteEdit: false },
   // Viernes 03/07
-  { fecha: '2026-07-03', hora: '15:00', local: 'Australia',         localEdit: false, visitante: '2do Grupo G',                     visitanteEdit: true  },
-  { fecha: '2026-07-03', hora: '19:00', local: 'Argentina',         localEdit: false, visitante: '2do Grupo H',                     visitanteEdit: true  },
-  { fecha: '2026-07-03', hora: '22:30', local: '1ro Grupo K',       localEdit: true,  visitante: 'Tercero Grupo D/E/I/J/L',         visitanteEdit: true  },
+  { fecha: '2026-07-03', hora: '15:00', local: 'Australia',         localEdit: false, visitante: 'Egipto',          visitanteEdit: false },
+  { fecha: '2026-07-03', hora: '19:00', local: 'Argentina',         localEdit: false, visitante: 'Cabo Verde',      visitanteEdit: false },
+  { fecha: '2026-07-03', hora: '22:30', local: 'Colombia',          localEdit: false, visitante: 'Ghana',           visitanteEdit: false },
 ];
 
 const DIAS = {
